@@ -1,6 +1,6 @@
 import random
 
-CARD_FACES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A']
+CARD_FACES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 SUIT_CHAR_CODES = {
     'heart': u'\u2661',
     'club': u'\u2667',
@@ -20,19 +20,14 @@ class DeckException(Exception):
 class Card:
     '''Class defining individual playing cards in a deck.'''
 
-    def __init__(self, suit, rank=None, face=None):
-        assert suit in ['heart', 'club', 'spade', 'diamond'], 'Unkown suit'
+    def __init__(self, suit, face):
+        assert suit in SUIT_CHAR_CODES.keys(), \
+            'Unkown suit: {}'.format(suit)
         self.suit = suit
 
-        assert rank or face, 'Either card face or rank has to be defined'
-        if rank:
-            assert rank in range(13), 'Invalid card rank'
-            self.rank = rank
-            self.face = CARD_FACES[rank]
-        elif face:
-            assert face in CARD_FACES, 'Invalid card face'
-            self.face = face
-            self.rank = CARD_FACES.index(face)
+        assert face in CARD_FACES or str(face) in CARD_FACES, \
+             'Invalid card face: {}'.format(face)
+        self.face = face
 
     def __repr__(self):
         return self.symbol

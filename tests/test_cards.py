@@ -4,29 +4,22 @@ from blackjack.cards import Card, Deck, CardException, DeckException
 
 class CardTest(unittest.TestCase):
 
-    def test_wrong_card_init(self):
-        kwargs = [
-            {'suit': 'heart', 'face': 'X'},
-            {'suit': 'green', 'face': 10},
-            {'suit': 'club', 'rank': 15},
-            {'suit': 'diamond'}
+    def test_card_init(self):
+        bad_args = [
+            ('heart', 'X'),
+            ('green', 10)
         ]
 
-        for kwarg in kwargs:
-            with self.subTest(kwarg=kwarg):
+        for arg in bad_args:
+            with self.subTest(arg=arg):
                 with self.assertRaises(AssertionError):
-                    Card(**kwarg)
+                    Card(*arg)
 
-    def test_correct_card_init(self):
-        kwargs = [
-            {'suit': 'heart', 'face': 'Q'},
-            {'suit': 'heart', 'rank': 10}
-        ]
-
-        for kwarg in kwargs:
-            with self.subTest(kwarg=kwarg):
-                card = Card(**kwarg)
-                self.assertEqual(card.symbol, '\u2661Q')
+        good_args = [('heart', '5'), ('heart', 5)]
+        for arg in good_args:
+            with self.subTest(arg=arg):
+                card = Card(*arg)
+                self.assertEqual(card.symbol, '\u26615')
 
 
 class DeckTest(unittest.TestCase):
