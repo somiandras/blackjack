@@ -1,8 +1,9 @@
 import unittest
-from cards import Card, Deck, CardException, DeckException
+from blackjack import Card, Deck, CardException, DeckException
 
 
 class CardTest(unittest.TestCase):
+
     def test_wrong_card_init(self):
         kwargs = [
             {'suit': 'heart', 'face': 'X'},
