@@ -1,4 +1,4 @@
 from .cards import Card, Deck, CardException, DeckException
-from .simulator import Simulator
-from .player import Player
-from .dealer import Dealer
+from .simulator import Simulator, SimulatorException
+from .player import Player, PlayerException
+from .dealer import Dealer, DealerException
