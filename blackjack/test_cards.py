@@ -1,5 +1,5 @@
 import unittest
-from blackjack import Card, Deck, CardException, DeckException
+from blackjack.cards import Card, Deck, CardException, DeckException
 
 
 class CardTest(unittest.TestCase):

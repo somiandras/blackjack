@@ -1,5 +1,6 @@
 import unittest
-from blackjack import Dealer, DealerException
+from blackjack.dealer import Dealer, DealerException
+
 
 class TestDealer(unittest.TestCase):
 
