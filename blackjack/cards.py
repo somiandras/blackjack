@@ -27,7 +27,7 @@ class Card:
 
         assert face in CARD_FACES or str(face) in CARD_FACES, \
              'Invalid card face: {}'.format(face)
-        self.face = face
+        self.face = str(face)
 
     def __repr__(self):
         return self.symbol
