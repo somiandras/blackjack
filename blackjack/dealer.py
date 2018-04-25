@@ -1,4 +1,4 @@
-from blackjack.cards import Deck
+from blackjack.deck import Deck
 
 
 class DealerException(Exception):
@@ -10,27 +10,26 @@ class Dealer:
     def __init__(self, player):
         self.player = player
         self.deck = Deck()
-        self.reset()
 
-    def reset(self):
+    def deal_starting_hands(self):
         self.deck.reshuffle()
-        self.player_cards = []
-        self.house_cards = []
-        self.player_value = 0
-        self.house_value = 0
 
-    def deal(self):
         self.player_cards = self.deck.deal(n_cards=2)
-        self.house_cards = self.deck.deal(n_cards=1)
+        self.player_value = self.evaluate_cards(self.player_cards)
 
-    def evaluate_hand(self, hand):
-        aces = [card for card in hand if card.face == 'A']
-        non_aces = [card for card in hand if card.face != 'A']
+        self.house_cards = self.deck.deal(n_cards=1)
+        self.house_value = self.evaluate_cards(self.house_cards)
+        
+        return self
+
+    def evaluate_cards(self, hand):
+        aces = [card for card in hand if card[0] == 'A']
+        non_aces = [card for card in hand if card[0] != 'A']
 
         value = 0
         for card in non_aces:
             try:
-                card_value = int(card.face)
+                card_value = int(card[0])
             except ValueError:
                 card_value = 10
 
@@ -43,3 +42,21 @@ class Dealer:
                 value += 1
 
         return value
+
+    def run_game(self):
+        self.deal_starting_hands()
+        
+        player_action = self.player.take_action(self.player_cards)
+
+        while player_action != 'stand' and self.player_value < 21:
+            self.player_cards.extend(self.deck.deal())
+            self.player_value = self.evaluate_cards(self.player_cards)
+            player_action = self.player.take_action(self.player_cards)
+
+        if self.player_value <= 21:
+            while self.house_value < 17:
+                self.house_cards.extend(self.deck.deal())
+                self.house_value = self.evaluate_cards(self.player_cards)
+
+        # Decide who won
+        # Clean-up before restarting (?)
