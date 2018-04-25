@@ -1,12 +1,12 @@
 import random
 
 CARD_FACES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
-SUIT_CHAR_CODES = {
-    'heart': u'\u2661',
-    'club': u'\u2667',
-    'spade': u'\u2664',
-    'diamond': u'\u2662'
-}
+SUIT_CHAR_CODES = [
+    ('club', u'\u2667'),
+    ('diamond', u'\u2662'),
+    ('heart', u'\u2661'),
+    ('spade', u'\u2664'),
+]
 
 
 class CardException(Exception):
@@ -21,7 +21,7 @@ class Card:
     '''Class defining individual playing cards in a deck.'''
 
     def __init__(self, suit, face):
-        assert suit in SUIT_CHAR_CODES.keys(), \
+        assert suit in [name for name, char in SUIT_CHAR_CODES], \
             'Unkown suit: {}'.format(suit)
         self.suit = suit
 
@@ -32,9 +32,28 @@ class Card:
     def __repr__(self):
         return self.symbol
 
+    def __hash__(self):
+        return hash(self.symbol)
+
+    def __eq__(self, other):
+        return self.symbol == other.symbol
+
+    def __lt__(self, other):
+        suits = [name for name, char in SUIT_CHAR_CODES]
+        self_suit_rank = suits.index(self.suit)
+        other_suit_rank = suits.index(other.suit)
+        self_face_rank = CARD_FACES.index(self.face)
+        other_face_rank = CARD_FACES.index(other.face)
+        
+        if self_suit_rank != other_suit_rank:
+            return self_suit_rank < other_suit_rank
+        else:
+            return self_face_rank < other_face_rank
+
     @property
     def symbol(self):
-        return '{}{}'.format(SUIT_CHAR_CODES[self.suit], self.face)
+        char = [char for name, char in SUIT_CHAR_CODES if name == self.suit][0]
+        return '{}{}'.format(char, self.face)
 
 
 class Deck:
@@ -47,7 +66,7 @@ class Deck:
         '''Generate new deck of cards and return list of cards.'''
 
         new_deck = []
-        for suit in SUIT_CHAR_CODES.keys():
+        for suit in [name for name, char in SUIT_CHAR_CODES]:
             for face in CARD_FACES:
                 new_deck.append(Card(suit, face=face))
 
