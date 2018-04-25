@@ -1,25 +1,5 @@
 import unittest
-from blackjack.cards import Card, Deck, CardException, DeckException
-
-
-class CardTest(unittest.TestCase):
-
-    def test_card_init(self):
-        bad_args = [
-            ('heart', 'X'),
-            ('green', 10)
-        ]
-
-        for arg in bad_args:
-            with self.subTest(arg=arg):
-                with self.assertRaises(AssertionError):
-                    Card(*arg)
-
-        good_args = [('heart', '5'), ('heart', 5)]
-        for arg in good_args:
-            with self.subTest(arg=arg):
-                card = Card(*arg)
-                self.assertEqual(card.symbol, '\u26615')
+from blackjack.deck import Deck, DeckException
 
 
 class DeckTest(unittest.TestCase):
@@ -35,12 +15,12 @@ class DeckTest(unittest.TestCase):
         
         self.assertIsInstance(new_deck, list)
         self.assertEqual(len(set(new_deck)), 52)
-        self.assertIsInstance(new_deck[0], Card)
+        self.assertEqual(len(new_deck[0]), 2)
 
     def test_shuffle(self):
-        old_deck = self.deck.cards.copy()
+        old_deck = list(self.deck.cards)
         self.deck.shuffle()
-        new_deck = self.deck.cards.copy()
+        new_deck = list(self.deck.cards)
 
         self.assertEqual(len(old_deck), len(new_deck))
         self.assertNotEqual(old_deck, new_deck)
@@ -49,7 +29,7 @@ class DeckTest(unittest.TestCase):
     def test_deal(self):
         for n in [0, 1, 2, 52]:
             with self.subTest(n=n):
-                old_deck = self.deck.cards.copy()
+                old_deck = list(self.deck.cards)
                 
                 if n <=0:
                     with self.assertRaises(AssertionError):
