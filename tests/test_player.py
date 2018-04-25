@@ -5,25 +5,8 @@ from blackjack.player import Player
 class TestPlayer(unittest.TestCase):
 
     def setUp(self):
-        pass
-
-    def test_sit_to_table(self):
-        pass
+        self.player = Player()
 
     def test_take_action(self):
-        pass
-
-    def test_save_state(self):
-        pass
-
-    def get_max_Q_action(self):
-        pass
-
-    def test_get_reward(self):
-        pass
-
-    def test_update_Q_values(self):
-        pass
-
-    def test_reset(self):
-        pass
+        action = self.player.take_action()
+        self.assertIn(action, ['stand', 'hit'])
