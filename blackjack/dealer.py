@@ -48,7 +48,7 @@ class Dealer:
         
         if self.player_value < 21:
             player_action = self.player.take_action(self.player_cards)
-            while player_action != 'stand':
+            while player_action != 'stand' and self.player_value < 21:
                 self.player_cards.extend(self.deck.deal())
                 self.player_value = self.evaluate_cards(self.player_cards)
                 player_action = self.player.take_action(self.player_cards)
@@ -58,12 +58,20 @@ class Dealer:
                 self.house_cards.extend(self.deck.deal())
                 self.house_value = self.evaluate_cards(self.house_cards)
 
-        if self.player_value < self.house_value or self.player_value > 21:
-            reward = -10
-        elif self.player_value > self.house_value:
+
+        if self.house_value <= 21 and self.player_value <= 21:
+            if self.player_value < self.house_value:
+                reward = -10
+            elif self.player_value > self.house_value:
+                reward = 10
+            else:
+                reward = 0
+        elif self.house_value > 21:
             reward = 10
-        else:
-            reward = 0
+        elif self.player_value > 21:
+            reward = -10
+
+        print('Player: {}\nHouse: {}'.format(self.player_cards, self.house_cards))
 
         self.player.get_reward(reward)
         return reward
