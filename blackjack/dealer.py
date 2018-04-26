@@ -41,22 +41,29 @@ class Dealer:
             else:
                 value += 1
 
-        return value
+        return value        
 
     def run_game(self):
         self.deal_starting_hands()
         
-        player_action = self.player.take_action(self.player_cards)
-
-        while player_action != 'stand' and self.player_value < 21:
-            self.player_cards.extend(self.deck.deal())
-            self.player_value = self.evaluate_cards(self.player_cards)
+        if self.player_value < 21:
             player_action = self.player.take_action(self.player_cards)
+            while player_action != 'stand':
+                self.player_cards.extend(self.deck.deal())
+                self.player_value = self.evaluate_cards(self.player_cards)
+                player_action = self.player.take_action(self.player_cards)
 
         if self.player_value <= 21:
             while self.house_value < 17:
                 self.house_cards.extend(self.deck.deal())
-                self.house_value = self.evaluate_cards(self.player_cards)
+                self.house_value = self.evaluate_cards(self.house_cards)
 
-        # Decide who won
-        # Clean-up before restarting (?)
+        if self.player_value < self.house_value or self.player_value > 21:
+            reward = -10
+        elif self.player_value > self.house_value:
+            reward = 10
+        else:
+            reward = 0
+
+        self.player.get_reward(reward)
+        return reward

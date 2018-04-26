@@ -6,8 +6,7 @@ from unittest.mock import Mock, MagicMock
 class TestDealer(unittest.TestCase):
 
     def setUp(self):
-        mock_player = MagicMock(spec=Player)
-        self.dealer = Dealer(mock_player)
+        self.dealer = Dealer(player=MagicMock())
 
     def test_deal_starting_hands(self):
         self.dealer.deal_starting_hands()
@@ -33,3 +32,25 @@ class TestDealer(unittest.TestCase):
             with self.subTest(hand=hand, value=value):
                 calculated_value = self.dealer.evaluate_cards(hand)
                 self.assertEqual(calculated_value, value)
+
+    def test_run_game(self):
+        # TODO: Set up test for player blackjack
+        dealer = Dealer(player=MagicMock())
+        dealer.deal_starting_hands = Mock()
+        dealer.player.take_action = Mock(side_effect=['hit', 'stand'])
+        dealer.deck.deal = Mock(side_effect=[['Ac'], ['6c']])    
+        
+        dealer.player_cards = ['3s', '4d']
+        dealer.player_value = 7
+        dealer.house_cards = ['Ad']
+        dealer.house_value = 11
+
+        reward = dealer.run_game()
+
+        dealer.deal_starting_hands.assert_called_once()
+
+        self.assertEqual(len(dealer.player_cards), 3)
+        self.assertEqual(dealer.player.take_action.call_count, 2)
+
+        dealer.player.get_reward.assert_called_once()    
+        self.assertEqual(reward, 10)
