@@ -36,7 +36,7 @@ class Dealer:
 
             value += card_value
         
-        for ace in aces:
+        for ace in aces: # pylint: disable=unused-variable
             if value <= 10:
                 value += 11
             else:
