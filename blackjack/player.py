@@ -12,14 +12,19 @@ class Player:
     transitions = []
     training = True
 
-    def __init__(self, alpha=0.5, gamma=0.5, epsilon=0.9, tolerance=0.05):
+    def __init__(self, alpha=0.8, gamma=0.9, epsilon=0.99, tolerance=0.01):
         self.alpha = 0.5
         self.gamma = gamma
         self._epsilon = epsilon
         self.tolerance = 0.05
 
     def action(self, player_cards, house_cards):
-        state = (tuple(sorted(player_cards)), tuple(house_cards))
+
+        # Strip card suit
+        player_cards = [card[0] for card in sorted(player_cards)]
+        house_cards = [card[0] for card in house_cards]
+
+        state = (tuple(player_cards), house_cards[0])
         
         if state not in self.Q:
             self.Q[state] = {'hit': 0, 'stand': 0}
@@ -48,11 +53,12 @@ class Player:
         self.t += 1
     
     def learn(self, reward):
-        for step, (state, action) in enumerate(reversed(self.transitions)):
+        rev_transitions = list(reversed(self.transitions))
+        for step, (state, action) in enumerate(rev_transitions):
             if step == 0:
                 mod_factor = reward
             else:
-                prev_state = self.transitions[step - 1][0]
+                prev_state = rev_transitions[step - 1][0]
                 prev_max_Q = max([v for a, v in self.Q[prev_state].items()])
                 mod_factor = self.gamma * prev_max_Q
 
