@@ -7,6 +7,9 @@ class TestPlayer(unittest.TestCase):
     def setUp(self):
         self.player = Player()
 
-    def test_take_action(self):
-        action = self.player.take_action()
+    @unittest.mock.patch('blackjack.player.Player.Q')
+    def test_take_action(self, mock_Q):
+        player_cards = ['As', 'Qh']
+        house_cards = ['Kd']
+        action = self.player.take_action(player_cards, house_cards)
         self.assertIn(action, ['stand', 'hit'])

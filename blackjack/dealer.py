@@ -10,6 +10,7 @@ class Dealer:
     def __init__(self, player, **kwargs):
         self.player = player
         self.deck = Deck()
+        self.balance = 1000
 
     def deal_starting_hands(self):
         self.deck.reshuffle()
@@ -58,15 +59,17 @@ class Dealer:
 
         return reward
 
-    def run_game(self, test=False, **kwargs):
+    def run_one_round(self, test=False, **kwargs):
         self.deal_starting_hands()
         
         if self.player_value < 21:
-            action = self.player.take_action(self.player_cards)
+            action = self.player.take_action(self.player_cards, self.house_cards)
             while action != 'stand' and self.player_value < 21:
                 self.player_cards.extend(self.deck.deal())
                 self.player_value = self.evaluate_cards(self.player_cards)
-                action = self.player.take_action(self.player_cards, test=test)
+                if self.player_value < 21:
+                    action = self.player.take_action(self.player_cards,
+                                                     self.house_cards, test=test)
 
         if self.player_value <= 21:
             while self.house_value < 17:
@@ -74,5 +77,7 @@ class Dealer:
                 self.house_value = self.evaluate_cards(self.house_cards)
 
         reward = self.evaluate_game()
-        if test == False:
-            self.player.get_reward(reward)
+        self.balance += reward
+        continue_training = self.player.close_round(reward, test=test)
+        
+        return continue_training

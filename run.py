@@ -1,5 +1,8 @@
 from blackjack import Simulator
+from blackjack import Player
+
 
 if __name__ == '__main__':
-    simulator = Simulator(train_rounds=20, test_rounds=10)
+    player = Player()
+    simulator = Simulator(player, test_rounds=10)
     simulator.run()

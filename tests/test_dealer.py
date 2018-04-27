@@ -33,7 +33,7 @@ class TestDealer(unittest.TestCase):
                 calculated_value = self.dealer.evaluate_cards(hand)
                 self.assertEqual(calculated_value, value)
 
-    def test_run_game(self):
+    def test_run_one_round(self):
         # TODO: Set up test for player blackjack
         dealer = Dealer(player=MagicMock())
         dealer.deal_starting_hands = Mock()
@@ -45,14 +45,14 @@ class TestDealer(unittest.TestCase):
         dealer.house_cards = ['Ad']
         dealer.house_value = 11
 
-        dealer.run_game()
+        dealer.run_one_round()
 
         dealer.deal_starting_hands.assert_called_once()
 
         self.assertEqual(len(dealer.player_cards), 3)
         self.assertEqual(dealer.player.take_action.call_count, 2)
 
-        dealer.player.get_reward.assert_called_once()    
+        dealer.player.close_round.assert_called_once()
 
     def test_evaluate_game(self):
         cases = [
