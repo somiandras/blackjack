@@ -1,5 +1,5 @@
 from blackjack.deck import Deck
-
+from blackjack.logger import Logger
 
 class DealerException(Exception):
     pass
@@ -10,7 +10,7 @@ class Dealer:
     def __init__(self, player, **kwargs):
         self.player = player
         self.deck = Deck()
-        self.balance = 1000
+        self.logger = Logger()
 
     def deal_starting_hands(self):
         self.deck.reshuffle()
@@ -36,7 +36,7 @@ class Dealer:
 
             value += card_value
         
-        for ace in aces: # pylint: disable=unused-variable
+        for _ in aces:
             if value <= 10:
                 value += 11
             else:
@@ -44,7 +44,8 @@ class Dealer:
 
         return value        
 
-    def evaluate_game(self):
+    @property
+    def reward(self):
         if self.house_value <= 21 and self.player_value <= 21:
             if self.player_value < self.house_value:
                 reward = -10
@@ -59,25 +60,37 @@ class Dealer:
 
         return reward
 
-    def run_one_round(self, test=False, **kwargs):
+    @property
+    def player_action(self):
+        training = self.player.training
+        player_cards = self.player_cards
+        house_cards = self.house_cards
+
+        action = self.player.action(player_cards, house_cards)
+        self.logger.log_action(training, player_cards, house_cards, action)
+
+        return action
+
+    def hit_hand(self, which_hand):
+        new_card = self.deck.deal()
+        if which_hand == 'player':
+            self.player_cards.extend(new_card)
+            self.player_value = self.evaluate_cards(self.player_cards)
+        elif which_hand == 'house':
+            self.house_cards.extend(new_card)
+            self.house_value = self.evaluate_cards(self.house_cards)
+
+    def run_game(self):
         self.deal_starting_hands()
-        
+       
         if self.player_value < 21:
-            action = self.player.take_action(self.player_cards, self.house_cards)
-            while action != 'stand' and self.player_value < 21:
-                self.player_cards.extend(self.deck.deal())
-                self.player_value = self.evaluate_cards(self.player_cards)
-                if self.player_value < 21:
-                    action = self.player.take_action(self.player_cards,
-                                                     self.house_cards, test=test)
+            while self.player_action != 'stand':
+                self.hit_hand('player')
+                if self.player_value >= 21:
+                    break
 
         if self.player_value <= 21:
             while self.house_value < 17:
-                self.house_cards.extend(self.deck.deal())
-                self.house_value = self.evaluate_cards(self.house_cards)
+                self.hit_hand('house')
 
-        reward = self.evaluate_game()
-        self.balance += reward
-        continue_training = self.player.close_round(reward, test=test)
-        
-        return continue_training
+        self.player.reward(self.reward)
