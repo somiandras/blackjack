@@ -12,11 +12,11 @@ class Player:
     transitions = []
     training = True
 
-    def __init__(self, alpha=0.8, gamma=0.9, epsilon=0.99, tolerance=0.01):
+    def __init__(self, alpha=0.8, gamma=0.9, epsilon=0.9, tolerance=0.01):
         self.alpha = 0.5
         self.gamma = gamma
         self._epsilon = epsilon
-        self.tolerance = 0.05
+        self.tolerance = tolerance
 
     def action(self, player_cards, house_cards):
 
@@ -25,20 +25,20 @@ class Player:
         house_cards = [card[0] for card in house_cards]
 
         state = (tuple(player_cards), house_cards[0])
-        
-        if state not in self.Q:
-            self.Q[state] = {'hit': 0, 'stand': 0}
 
         roll = random.random()
-        if roll < self.epsilon:
-            action = random.choice(['stand', 'hit'])
+        if roll < self.epsilon or state not in self.Q:
+            potential_actions = ['stand', 'hit']
         else:
             maxQ = max([value for key, value in self.Q[state].items()])
             potential_actions = [a for a, q in self.Q[state].items() if q == maxQ]
-            action = random.choice(potential_actions)
+            
+        action = random.choice(potential_actions)
 
         if self.training:
             self.transitions.append((state, action))
+            if state not in self.Q:
+                self.Q[state] = {'hit': 0, 'stand': 0}
 
         return action
 
@@ -67,4 +67,7 @@ class Player:
 
     @property
     def epsilon(self):
-        return self._epsilon ** self.t
+        if self.training:
+            return self._epsilon ** self.t
+        else:
+            return 0
