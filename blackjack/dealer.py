@@ -43,6 +43,21 @@ class Dealer:
 
         return value        
 
+    def evaluate_game(self):
+        if self.house_value <= 21 and self.player_value <= 21:
+            if self.player_value < self.house_value:
+                reward = -10
+            elif self.player_value > self.house_value:
+                reward = 10
+            else:
+                reward = 0
+        elif self.player_value > 21:
+            reward = -10
+        elif self.house_value > 21:
+            reward = 10
+
+        return reward
+
     def run_game(self):
         self.deal_starting_hands()
         
@@ -58,20 +73,7 @@ class Dealer:
                 self.house_cards.extend(self.deck.deal())
                 self.house_value = self.evaluate_cards(self.house_cards)
 
-
-        if self.house_value <= 21 and self.player_value <= 21:
-            if self.player_value < self.house_value:
-                reward = -10
-            elif self.player_value > self.house_value:
-                reward = 10
-            else:
-                reward = 0
-        elif self.house_value > 21:
-            reward = 10
-        elif self.player_value > 21:
-            reward = -10
-
         print('Player: {}\nHouse: {}'.format(self.player_cards, self.house_cards))
 
+        reward = self.evaluate_game()
         self.player.get_reward(reward)
-        return reward

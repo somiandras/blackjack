@@ -45,7 +45,7 @@ class TestDealer(unittest.TestCase):
         dealer.house_cards = ['Ad']
         dealer.house_value = 11
 
-        reward = dealer.run_game()
+        dealer.run_game()
 
         dealer.deal_starting_hands.assert_called_once()
 
@@ -53,4 +53,21 @@ class TestDealer(unittest.TestCase):
         self.assertEqual(dealer.player.take_action.call_count, 2)
 
         dealer.player.get_reward.assert_called_once()    
-        self.assertEqual(reward, 10)
+
+    def test_evaluate_game(self):
+        cases = [
+            (23, 10, -10),
+            (21, 11, 10),
+            (20, 17, 10),
+            (18, 18, 0),
+            (17, 20, -10),
+            (16, 22, 10),
+            (23, 23, -10)
+        ]
+
+        for player_v, house_v, exp_rew in cases:
+            with self.subTest(player=player_v, house=house_v, exp_rew=exp_rew):
+                self.dealer.player_value = player_v
+                self.dealer.house_value = house_v
+                reward = self.dealer.evaluate_game()
+                self.assertEqual(reward, exp_rew)
