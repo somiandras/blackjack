@@ -1,5 +1,6 @@
 from blackjack.dealer import Dealer
 from blackjack.player import Player
+from blackjack.logger import Logger
 
 
 class SimulatorException(Exception):
@@ -12,6 +13,7 @@ class Simulator:
         self.player = player
         self.test_games = test_games
         self.dealer = Dealer(self.player)
+        self.logger = Logger()
         
     def run(self):
         rounds = 0
@@ -22,3 +24,5 @@ class Simulator:
         for _ in range(self.test_games):
             self.dealer.run_game()
             rounds += 1
+
+        self.logger.log_Q(self.player.Q)
