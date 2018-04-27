@@ -8,23 +8,17 @@ class SimulatorException(Exception):
 
 class Simulator:
 
-    def __init__(self, player, test_rounds=100):
+    def __init__(self, player, test_games=100):
         self.player = player
-        self.test_rounds = test_rounds
+        self.test_games = test_games
         self.dealer = Dealer(self.player)
         
     def run(self):
-        train_rounds = 0
-        training = True
-        while training:
-            training = self.dealer.run_one_round(test=False)
-            train_rounds += 1
-            print('Training rounds: {}, balance: {}'.format(train_rounds, self.dealer.balance))
+        rounds = 0
+        while self.player.training:
+            self.dealer.run_game()
+            rounds += 1
 
-        test_rounds = 0
-        while test_rounds < self.test_rounds:
-            self.dealer.run_one_round(test=True)
-            test_rounds += 1
-            print('Test rounds: {}'.format(test_rounds))
-
-        print('Finished, balance: {}'.format(self.dealer.balance))
+        for _ in range(self.test_games):
+            self.dealer.run_game()
+            rounds += 1
