@@ -7,7 +7,7 @@ class DealerException(Exception):
 
 class Dealer:
 
-    def __init__(self, player):
+    def __init__(self, player, **kwargs):
         self.player = player
         self.deck = Deck()
 
@@ -58,22 +58,21 @@ class Dealer:
 
         return reward
 
-    def run_game(self):
+    def run_game(self, test=False, **kwargs):
         self.deal_starting_hands()
         
         if self.player_value < 21:
-            player_action = self.player.take_action(self.player_cards)
-            while player_action != 'stand' and self.player_value < 21:
+            action = self.player.take_action(self.player_cards)
+            while action != 'stand' and self.player_value < 21:
                 self.player_cards.extend(self.deck.deal())
                 self.player_value = self.evaluate_cards(self.player_cards)
-                player_action = self.player.take_action(self.player_cards)
+                action = self.player.take_action(self.player_cards, test=test)
 
         if self.player_value <= 21:
             while self.house_value < 17:
                 self.house_cards.extend(self.deck.deal())
                 self.house_value = self.evaluate_cards(self.house_cards)
 
-        print('Player: {}\nHouse: {}'.format(self.player_cards, self.house_cards))
-
         reward = self.evaluate_game()
-        self.player.get_reward(reward)
+        if test == False:
+            self.player.get_reward(reward)

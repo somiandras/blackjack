@@ -1,9 +1,5 @@
-from blackjack import Dealer, Player
+from blackjack import Simulator
 
-dealer = Dealer(Player())
-
-reward = 0
-for i in range(10):
-    reward += dealer.run_game()
-
-print(reward)
+if __name__ == '__main__':
+    simulator = Simulator(train_rounds=20, test_rounds=10)
+    simulator.run()
