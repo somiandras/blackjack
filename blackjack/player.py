@@ -53,7 +53,8 @@ class Player:
         self.transitions = []
         self.t += 1
 
-        if self.epsilon < self.tolerance or (self.no_decay and self.t > self.training_rounds):
+        if (not self.no_decay and self.epsilon < self.tolerance) or \
+            (self.no_decay and self.t > self.training_rounds):
             self.training = False
     
     def learn(self, reward):
