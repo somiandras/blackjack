@@ -13,7 +13,7 @@ the game.
 
 ## Classes:
 
-### blackjack.Player
+### blackjack.Player
 ### blackjack.Simulator
 ### blackjack.dealer.Dealer
 ### blackjack.deck.Deck
