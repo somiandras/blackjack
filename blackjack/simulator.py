@@ -26,3 +26,6 @@ class Simulator:
             rounds += 1
 
         self.logger.log_Q(self.player.Q)
+    
+    def report(self, *args, **kwargs):
+        self.logger.report(*args, **kwargs)
