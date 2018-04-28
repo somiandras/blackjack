@@ -1,5 +1,5 @@
 import unittest
-from blackjack.dealer import Dealer, DealerException
+from blackjack.dealer import Dealer
 from blackjack.player import Player
 from unittest.mock import Mock, MagicMock
 
