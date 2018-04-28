@@ -55,10 +55,15 @@ class Logger():
         with open('logs/results_log.txt', 'a') as results:
             results.write('{}\t{:20}\t{:20}\t{:4}\n'.format(phase, player, house, reward))
 
-    def report(self, rolling=1000):
+    def report(self, rolling=1000, suffix=''):
+        if len(suffix):
+            suffix = '_' + suffix
+        
         df = pd.read_table('logs/results_log.txt')
+
         fig, ax = plt.subplots()
         for phase in ['Training', 'Testing']:
             data = df[df['Phase'] == phase]
             ax.plot(data['Reward'].rolling(rolling).sum())
-        fig.savefig('logs/rolling_reward.png')
+
+        fig.savefig('logs/rolling_reward{}.png'.format(suffix))
