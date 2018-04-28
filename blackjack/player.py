@@ -2,11 +2,9 @@ import random
 from blackjack.logger import Logger
 
 
-class PlayerException(Exception):
-    pass
-
-
 class Player:
+    
+
     Q = dict()
     t = 0
     transitions = []
@@ -21,21 +19,23 @@ class Player:
         self.tolerance = tolerance
         self.training_rounds = training_rounds
 
-    def action(self, player_cards, house_cards):
-
-        # Strip card suit
-        player_cards = [card[0] for card in sorted(player_cards)]
-        house_cards = [card[0] for card in house_cards]
-
-        state = (tuple(player_cards), house_cards[0])
-
+    def action(self, state, options):
+        
+        # Initialize state in Q collection with 0 for al
+        #  possible options if agent is currently learning
         if state not in self.Q and self.training:
-            self.Q[state] = {'hit': 0, 'stand': 0}
+            self.Q[state] = dict()
+            for option in options:
+                self.Q[state][option] = 0
 
         roll = random.random()
         if roll < self.epsilon or state not in self.Q:
-            potential_actions = ['stand', 'hit']
+            # If agent is testing and state is unkown or the exploration
+            # "roll" is less then epsilon, randomly choose from options
+            potential_actions = options
         else:
+            # Get max Q value from Q collection for the given state and
+            # randomly choose action from actions with the max. Q
             maxQ = max([value for key, value in self.Q[state].items()])
             potential_actions = [a for a, q in self.Q[state].items() if q == maxQ]
         
@@ -58,6 +58,11 @@ class Player:
             self.training = False
     
     def learn(self, reward):
+        # TODO: This is just a part of the Q iteration, we should update
+        # all other states that could in theory lead to final state where
+        # reward is given. The current implementation propagates reward
+        # only to Q(s, a) of the action chain that directly lead to it.
+
         rev_transitions = list(reversed(self.transitions))
         for step, (state, action) in enumerate(rev_transitions):
             if step == 0:

@@ -16,6 +16,7 @@ class Dealer:
         self.player = player
         self.deck = Deck()
         self.logger = Logger()
+        self.options = ['stand', 'hit']
 
     def deal_starting_hands(self):
         '''
@@ -105,19 +106,42 @@ class Dealer:
         return reward
 
     @property
+    def game_state(self):
+        '''
+        Creates ((P1, P2, ...), H) tuple, where P1, P2, ... are the
+        player's cards ranks, while H is the rank of the open card
+        of the house. The tuple represents the current state of the game,
+        which is needed by the learning agent.
+
+        Note: the suit of the cards is stripped as it is not necessary
+        for computing the hand values and bloats state space for the
+        learner.
+
+        Returns: tuple: state of the game, eg. (('A', '4'), 'K')
+        '''
+
+        player_cards = [card[0] for card in sorted(self.player_cards)]
+        house_card = [card[0] for card in self.house_cards][0]
+
+        state = (tuple(player_cards), house_card)
+
+        return state
+
+    @property
     def player_action(self):
         '''
-        Returns the player's chosen action, after calling player.action(),
-        and also logs the given action (phase, player hand, house hand,
-        action)
+        Returns the player's chosen action, after calling player.action()
+        with current state and the given options for player actions. Logs
+        the given action (phase, player hand, house hand, action).
 
-        Returns: (str): 'hit' or 'stand'
+        Returns: (str): players chose action, eg. 'hit' or 'stand'
         '''
+        action = self.player.action(self.game_state, self.options)
+        
         training = self.player.training
         player_cards = self.player_cards
         house_cards = self.house_cards
 
-        action = self.player.action(player_cards, house_cards)
         self.logger.log_action(training, player_cards, house_cards, action)
 
         return action
