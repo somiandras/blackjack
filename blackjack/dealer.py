@@ -117,7 +117,7 @@ class Dealer:
         for computing the hand values and bloats state space for the
         learner.
 
-        Returns: tuple: state of the game, eg. (('A', '4'), 'K')
+        Returns: (tuple): state of the game, eg. (('A', '4'), 'K')
         '''
 
         player_cards = [card[0] for card in sorted(self.player_cards)]
@@ -186,6 +186,6 @@ class Dealer:
             while self.house_value < 17:
                 self.hit_hand('house')
 
-        self.player.reward(self.reward)
+        self.player.set_reward(self.reward)
         self.logger.log_results(
             self.player.training, self.player_cards, self.house_cards, self.reward)
