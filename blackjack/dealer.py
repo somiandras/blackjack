@@ -14,14 +14,18 @@ class Dealer:
 
     def deal_starting_hands(self):
         self.deck.reshuffle()
-
         self.player_cards = self.deck.deal(n_cards=2)
-        self.player_value = self.evaluate_cards(self.player_cards)
-
         self.house_cards = self.deck.deal(n_cards=1)
-        self.house_value = self.evaluate_cards(self.house_cards)
         
         return self
+
+    @property
+    def player_value(self):
+        return self.evaluate_cards(self.player_cards)
+
+    @property
+    def house_value(self):
+        return self.evaluate_cards(self.house_cards)
 
     def evaluate_cards(self, hand):
         aces = [card for card in hand if card[0] == 'A']
@@ -75,10 +79,8 @@ class Dealer:
         new_card = self.deck.deal()
         if which_hand == 'player':
             self.player_cards.extend(new_card)
-            self.player_value = self.evaluate_cards(self.player_cards)
         elif which_hand == 'house':
             self.house_cards.extend(new_card)
-            self.house_value = self.evaluate_cards(self.house_cards)
 
     def run_game(self):
         self.deal_starting_hands()
@@ -94,3 +96,5 @@ class Dealer:
                 self.hit_hand('house')
 
         self.player.reward(self.reward)
+        self.logger.log_results(
+            self.player.training, self.player_cards, self.house_cards, self.reward)
