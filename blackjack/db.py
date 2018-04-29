@@ -166,21 +166,6 @@ class DB():
                     state = ? AND
                     action = ?
             ''', (value, state, action))
-
-    def log_Q(self, Q):
-        with open('logs/q.pkl', 'b+w') as q_pkl:
-            pickle.dump(Q, q_pkl)
-
-        with open('logs/q_log.txt', 'w') as q_log:
-            q_log.write('Player\tHouse\tHit    \tStand\n')
-            for state, action in Q.items():
-                player = ' '.join(state[0])
-                house = state[1]
-                hit = action['hit']
-                stand = action['stand']
-
-                q_log.write(
-                    '{:8}\t{:6}\t{:4.2f}\t{:4.2f}\n'.format(player, house, hit, stand))
     
     def log_results(self, training, final_state, reward):
 
