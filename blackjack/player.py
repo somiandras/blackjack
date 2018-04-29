@@ -43,10 +43,6 @@ class Player:
     
     Properties
     ----------
-    `player.Q`: (dictionary): dict holding the learned Q values. Top level
-    keys are the states, second level keys are the actions and
-    approximated Q values are the values.
-
     `ACTIONS`: list(str): constant list of possible actions the player
     can take.
 
@@ -57,7 +53,6 @@ class Player:
     '''
     
     ACTIONS = ['hit', 'stand']
-    Q = dict()
     t = 0
     last_transition = None
     training = True
@@ -77,11 +72,10 @@ class Player:
         Returns the chosen action from the given options for the provided
         state.
 
-        Adds states to `self.Q` dictionary when encountered during
-        training phase and initializes the given options as actions with
-        zero value. Based on player settings, it explores new actions
-        with epsilon propbability when Q values are available for the
-        given state.
+        Adds states to Q table when encountered during training phase 
+        and initializes the given options as actions with zero value. 
+        Based on player settings, it explores new actions with epsilon 
+        propbability when Q values are available for the given state.
 
         Args
         ----
