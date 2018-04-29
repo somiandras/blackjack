@@ -70,6 +70,7 @@ class Player:
         self.constant_epsilon = constant_epsilon
         self.tolerance = tolerance
         self.training_rounds = training_rounds
+        self.logger = Logger()
 
     def action(self, state, options):
         '''
@@ -110,9 +111,11 @@ class Player:
         if self.training:
             self.last_transition = (state, action)
 
+        self.logger.log_action(self.training, state, action)
+
         return action
 
-    def set_reward(self, reward):
+    def set_reward(self, reward, final_state):
         '''
         Should be called from outside when a reward is given for a
         decision. If the player is in training phase, initiates learning
@@ -128,6 +131,8 @@ class Player:
         '''
         if self.training:
             self.learn(reward)
+
+        self.logger.log_results(self.training, final_state, reward)
 
         self.t += 1
 

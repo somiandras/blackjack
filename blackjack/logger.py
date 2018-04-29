@@ -10,11 +10,11 @@ class Logger():
             pass
 
         self.con = sqlite3.connect('db/blackjack.db')
+
         try:
             with self.con as con:
                 con.execute('''
-                    CREATE TABLE results (phase TEXT, player TEXT, house TEXT,
-                    result INTEGER);
+                    CREATE TABLE results (phase TEXT, state TEXT, result INTEGER);
                 ''')
         except sqlite3.OperationalError:
             con.execute('DELETE FROM results')
@@ -22,8 +22,7 @@ class Logger():
         try:
             with self.con as con:
                 con.execute('''
-                    CREATE TABLE actions (phase TEXT, player TEXT, house TEXT,
-                    action TEXT);
+                    CREATE TABLE actions (phase TEXT, state TEXT, action TEXT);
                 ''')
         except sqlite3.OperationalError:
             con.execute('DELETE FROM actions')
@@ -36,9 +35,7 @@ class Logger():
         except sqlite3.OperationalError:
             con.execute('DELETE FROM Q')
 
-    def log_action(self, training, player_cards, house_cards, action, *args):
-        hc = house_cards[0]
-        pc = ' '.join(player_cards)
+    def log_action(self, training, state, action):
 
         if training:
             phase = 'Training'
@@ -46,8 +43,8 @@ class Logger():
             phase = 'Testing'
 
         with self.con as con:
-            con.execute('INSERT INTO actions VALUES (?,?,?,?)',
-                        (phase, hc, pc, action))
+            con.execute('INSERT INTO actions VALUES (?,?,?)',
+                        (phase, state, action))
 
     def log_Q(self, Q):
         with open('logs/q.pkl', 'b+w') as q_pkl:
@@ -64,14 +61,13 @@ class Logger():
                 q_log.write(
                     '{:8}\t{:6}\t{:4.2f}\t{:4.2f}\n'.format(player, house, hit, stand))
     
-    def log_results(self, training, player, house, reward):
-        player = ' '.join(player)
-        house = ' '.join(house)
+    def log_results(self, training, final_state, reward):
+
         if training:
             phase = 'Training'
         else:
             phase = 'Testing'
         
         with self.con as con:
-            con.execute('INSERT INTO results VALUES (?,?,?,?)',
-                        (phase, player, house, reward))
+            con.execute('INSERT INTO results VALUES (?,?,?)',
+                        (phase, final_state, reward))

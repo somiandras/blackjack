@@ -1,5 +1,4 @@
 from blackjack.deck import Deck
-from blackjack.logger import Logger
 
 
 class Dealer:
@@ -15,7 +14,6 @@ class Dealer:
     def __init__(self, player, **kwargs):
         self.player = player
         self.deck = Deck()
-        self.logger = Logger()
         self.options = ['stand', 'hit']
 
     def deal_starting_hands(self):
@@ -137,12 +135,6 @@ class Dealer:
         Returns: (str): players chose action, eg. 'hit' or 'stand'
         '''
         action = self.player.action(self.game_state, self.options)
-        
-        training = self.player.training
-        player_cards = self.player_cards
-        house_cards = self.house_cards
-
-        self.logger.log_action(training, player_cards, house_cards, action)
 
         return action
 
@@ -186,6 +178,4 @@ class Dealer:
             while self.house_value < 17:
                 self.hit_hand('house')
 
-        self.player.set_reward(self.reward)
-        self.logger.log_results(
-            self.player.training, self.player_cards, self.house_cards, self.reward)
+        self.player.set_reward(self.reward, self.game_state)
