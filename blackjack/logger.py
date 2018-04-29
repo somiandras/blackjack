@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use('AGG')
 import pandas as pd
 import matplotlib.pyplot as plt
+import pickle
 
 class Logger():
     def __init__(self):
@@ -33,6 +34,9 @@ class Logger():
             log.write(action_record)
 
     def log_Q(self, Q):
+        with open('logs/q.pkl', 'w') as q_pkl:
+            pickle.dump(Q, q_pkl)
+
         with open('logs/q_log.txt', 'w') as q_log:
             q_log.write('Player\tHouse\tHit    \tStand\n')
             for state, action in Q.items():
