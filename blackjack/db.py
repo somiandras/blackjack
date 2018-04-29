@@ -52,16 +52,32 @@ class DB():
             con.execute('INSERT INTO actions VALUES (?,?,?)',
                         (phase, state, action))
 
-    def max_Q(self, state):
-        with self.con as con:            
-            cursor = con.execute('''
-                SELECT 
-                    state, MAX(value) 
+    def max_Q(self, state, keys=None):
+        if keys is None:
+            query = '''
+                SELECT
+                    state, MAX(value)
                 FROM Q
                 WHERE
                     state = ?
                 GROUP BY state
-            ''', (state, ))
+            '''
+            args = (state, )
+        else:
+            seq = ','.join(['?'] * len(keys))
+            query = '''
+                SELECT
+                    state, MAX(value)
+                FROM Q
+                WHERE
+                    state = ? AND
+                    action IN ({})
+                GROUP BY state
+            '''.format(seq)
+            args = (state, *keys)
+
+        with self.con as con:            
+            cursor = con.execute(query, args)
 
             _, max_Q = cursor.fetchone()
         
@@ -109,19 +125,35 @@ class DB():
             else:
                 return None
 
-    def argmax_Q(self, state):
-        max_Q = self.max_Q(state)
-        with self.con as con:
-            cursor = con.execute('''
+    def argmax_Q(self, state, keys=None):
+        max_Q = self.max_Q(state, keys)
+
+        if keys is None:
+            query = '''
                 SELECT state, action, value
                 FROM Q
                 WHERE
                     value = ? AND
                     state = ?
-            ''', (max_Q, state))
+            '''
+            args = (max_Q, state)
+        else:
+            seq = ','.join(['?'] * len(keys))
+            query = '''
+                SELECT state, action, value
+                FROM Q
+                WHERE
+                    value = ? AND
+                    state = ? AND
+                    action IN ({})
+            '''.format(seq)
+            args = (max_Q, state, *keys)
 
-            if cursor is not None:
-                return [action for s, action, v in cursor]
+        with self.con as con:
+            cursor = con.execute(query, args)
+
+            if cursor.fetchall() is not None:
+                return [action for s, action, v in cursor.fetchall()]
             else:
                 return None
 

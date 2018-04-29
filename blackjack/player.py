@@ -98,7 +98,7 @@ class Player:
         if roll < self.epsilon or not state_in_Q:
             potential_actions = options
         else:
-            potential_actions = self.db.argmax_Q(state)
+            potential_actions = self.db.argmax_Q(state, options)
         
         action = random.choice(potential_actions)
         
