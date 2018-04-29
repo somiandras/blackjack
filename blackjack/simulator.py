@@ -21,22 +21,26 @@ class Simulator:
         
     def run(self):
         '''
-        Runs the simulation in two phases: 1) training until the 
-        `player.training` flag is set to `True` 2) testing after training
-        flag is set to `False`.
-
-        After training and testing is done this method logs what the 
-        player has "learned" by logging `player.Q`.
+        Runs the simulation in two phases: 
+        1) training until the `player.training` flag is set to `True`   
+        2) testing after training flag is set to `False`.
 
         Returns: self
         '''
         rounds = 0
         while self.player.training:
-            self.dealer.run_game()
             rounds += 1
+            self.dealer.run_game()
+            print(' >> {} training round done'.format(
+                rounds), end="\r", flush=True)
 
-        for _ in range(self.test_games):
+        print()
+        
+        for test in range(1, self.test_games + 1):
             self.dealer.run_game()
-            rounds += 1
+            print(' >> {} testing round done'.format(
+                test), end="\r", flush=True)
+
+        print()
 
         return self
