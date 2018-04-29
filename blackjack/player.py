@@ -101,16 +101,18 @@ class Player:
         roll = random.random()
         if roll < self.epsilon or state not in self.Q:
             potential_actions = options
+            style = 'random'
         else:
             potential_actions = [a for a, q in self.Q[state].items() \
                 if q == self._max_Q(state, options)]
+            style = 'learned'
         
         action = random.choice(potential_actions)
         
         if self.training:
             self.last_transition = (state, action)
 
-        return action
+        return action, style
 
     def set_reward(self, reward):
         '''

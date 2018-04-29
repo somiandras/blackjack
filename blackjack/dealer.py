@@ -136,13 +136,14 @@ class Dealer:
 
         Returns: (str): players chose action, eg. 'hit' or 'stand'
         '''
-        action = self.player.action(self.game_state, self.options)
+        action, style = self.player.action(self.game_state, self.options)
         
         training = self.player.training
         player_cards = self.player_cards
         house_cards = self.house_cards
 
-        self.logger.log_action(training, player_cards, house_cards, action)
+        self.logger.log_action(
+            training, player_cards, house_cards, action, style)
 
         return action
 

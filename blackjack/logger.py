@@ -14,12 +14,12 @@ class Logger():
             pass
 
         with open('logs/action_log.txt', 'w') as log:
-            log.write('Phase\tHouse\tPlayer\tAction\n')
+            log.write('Phase\tHouse\tPlayer\tAction\tStyle\n')
 
         with open('logs/results_log.txt', 'w') as results:
             results.write('Phase\tPlayer\tHouse\tReward\n')
 
-    def log_action(self, training, player_cards, house_cards, action):
+    def log_action(self, training, player_cards, house_cards, action, style):
         hc = house_cards[0]
         pc = ' '.join(player_cards)
 
@@ -28,7 +28,8 @@ class Logger():
         else:
             phase = 'Testing'
 
-        action_record = '{:8}\t{:5}\t{:10}\t{:5}\n'.format(phase, hc, pc, action)
+        action_record = '{:8}\t{:5}\t{:10}\t{:5}\t{:8}\n'.format(
+            phase, hc, pc, action, style)
         
         with open('logs/action_log.txt', 'a') as log:
             log.write(action_record)
