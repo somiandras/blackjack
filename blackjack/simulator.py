@@ -1,13 +1,12 @@
 from blackjack.dealer import Dealer
 from blackjack.player import Player
-from blackjack.logger import Logger
 
 
 class Simulator:
     '''
     Class for running series of blackjack games with one player and some
     parameters for configuring the simulation. Under the hood uses
-    `blackjack.Dealer` and `blackjack.Logger`.
+    `blackjack.Dealer`.
 
     Args:  
     `player`: configured blackjack.Player instance which is added to the
@@ -19,7 +18,6 @@ class Simulator:
         self.player = player
         self.test_games = test_games
         self.dealer = Dealer(self.player)
-        self.logger = Logger()
         
     def run(self):
         '''
@@ -40,7 +38,5 @@ class Simulator:
         for _ in range(self.test_games):
             self.dealer.run_game()
             rounds += 1
-
-        self.logger.log_Q(self.player.Q)
 
         return self

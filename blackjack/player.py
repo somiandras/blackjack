@@ -97,14 +97,14 @@ class Player:
         '''
 
         if self.training:
-            self._init_state(state)
+            self.logger.init_Q(state, self.ACTIONS)
 
+        state_in_Q = self.logger.check_stateQ(state)
         roll = random.random()
-        if roll < self.epsilon or state not in self.Q:
+        if roll < self.epsilon or not state_in_Q:
             potential_actions = options
         else:
-            potential_actions = [a for a, q in self.Q[state].items() \
-                if q == self._max_Q(state, options)]
+            potential_actions = self.logger.argmax_Q(state)
         
         action = random.choice(potential_actions)
         
@@ -156,42 +156,6 @@ class Player:
         self._update_Q_value(state, action, reward, 0)
         self._update_neighbor_states(state, 'hit')
 
-    def _init_state(self, state):
-        '''
-        Add state to Q dictionary and initialize its values.
-
-        Args
-        ----
-        `state`: (obj): state to be added. Must be hashable
-
-        Returns: None
-        ------
-        '''
-        if state not in self.Q:
-            self.Q[state] = dict()
-            for action in self.ACTIONS:
-                self.Q[state][action] = 0
-    
-    def _max_Q(self, state, keys=None):
-        '''
-        Return maximum Q value for a given state.
-
-        Args:  
-        `state`: (obj): the state to find the maximum Q value for
-
-        `keys`: list(str): keys to limit calculation for (optional)
-
-        Returns
-        ------
-        (int): max. Q value
-        '''
-
-        if keys:
-            return max([value for key, value in self.Q[state].items() \
-                        if key in keys])
-        else:
-            return max([value for key, value in self.Q[state].items()])
-
     def _update_Q_value(self, state, action, reward, next_Q):
         '''
         Update Q value of the given action on a given state using the 
@@ -211,8 +175,11 @@ class Player:
         Returns: None
         -------
         '''
-        self.Q[state][action] = (1 - self.alpha) * self.Q[state][action] + \
+        old_value = self.logger.get_Q_value(state, action)
+        new_value = (1 - self.alpha) * old_value + \
             self.alpha * (reward + self.gamma * next_Q)
+        
+        self.logger.set_Q(state, action, new_value)
     
     def _update_neighbor_states(self, state, action):
         '''
@@ -245,14 +212,14 @@ class Player:
         ------
         '''
         player_cards, house_card = state
-        max_Q = self._max_Q(state)
+        max_Q = self.logger.max_Q(state)
 
         if len(player_cards) > 2:
             combos = combinations(player_cards, len(player_cards) - 1)
             neighbor_states = [((combo, house_card), action) for combo in combos]
         
             for neighbor_state, action in neighbor_states:
-                self._init_state(neighbor_state)
+                self.logger.init_Q(neighbor_state, self.ACTIONS)
                 self._update_Q_value(neighbor_state, action, 0, max_Q)
                 self._update_neighbor_states(neighbor_state, 'hit')
     
