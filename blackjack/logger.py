@@ -35,7 +35,7 @@ class Logger():
             log.write(action_record)
 
     def log_Q(self, Q):
-        with open('logs/q.pkl', 'w') as q_pkl:
+        with open('logs/q.pkl', 'b+w') as q_pkl:
             pickle.dump(Q, q_pkl)
 
         with open('logs/q_log.txt', 'w') as q_log:
