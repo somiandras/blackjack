@@ -1,5 +1,5 @@
 import random
-from blackjack.logger import Logger
+from blackjack.db import DB
 from itertools import combinations
 
 class Player:
@@ -70,7 +70,7 @@ class Player:
         self.constant_epsilon = constant_epsilon
         self.tolerance = tolerance
         self.training_rounds = training_rounds
-        self.logger = Logger()
+        self.db = DB()
 
     def action(self, state, options):
         '''
@@ -97,21 +97,21 @@ class Player:
         '''
 
         if self.training:
-            self.logger.init_Q(state, self.ACTIONS)
+            self.db.init_Q(state, self.ACTIONS)
 
-        state_in_Q = self.logger.check_stateQ(state)
+        state_in_Q = self.db.check_stateQ(state)
         roll = random.random()
         if roll < self.epsilon or not state_in_Q:
             potential_actions = options
         else:
-            potential_actions = self.logger.argmax_Q(state)
+            potential_actions = self.db.argmax_Q(state)
         
         action = random.choice(potential_actions)
         
         if self.training:
             self.last_transition = (state, action)
 
-        self.logger.log_action(self.training, state, action)
+        self.db.log_action(self.training, state, action)
 
         return action
 
@@ -132,12 +132,12 @@ class Player:
         if self.training:
             self.learn(reward)
 
-        self.logger.log_results(self.training, final_state, reward)
+        self.db.log_results(self.training, final_state, reward)
 
         self.t += 1
 
         if (not self.constant_epsilon and self.epsilon < self.tolerance) or \
-                (self.constant_epsilon and self.t > self.training_rounds):
+                (self.constant_epsilon and self.t >= self.training_rounds):
             self.training = False
  
     def learn(self, reward):
@@ -175,11 +175,11 @@ class Player:
         Returns: None
         -------
         '''
-        old_value = self.logger.get_Q_value(state, action)
+        old_value = self.db.get_Q_value(state, action)
         new_value = (1 - self.alpha) * old_value + \
             self.alpha * (reward + self.gamma * next_Q)
         
-        self.logger.set_Q(state, action, new_value)
+        self.db.set_Q(state, action, new_value)
     
     def _update_neighbor_states(self, state, action):
         '''
@@ -212,14 +212,14 @@ class Player:
         ------
         '''
         player_cards, house_card = state
-        max_Q = self.logger.max_Q(state)
+        max_Q = self.db.max_Q(state)
 
         if len(player_cards) > 2:
             combos = combinations(player_cards, len(player_cards) - 1)
             neighbor_states = [((combo, house_card), action) for combo in combos]
         
             for neighbor_state, action in neighbor_states:
-                self.logger.init_Q(neighbor_state, self.ACTIONS)
+                self.db.init_Q(neighbor_state, self.ACTIONS)
                 self._update_Q_value(neighbor_state, action, 0, max_Q)
                 self._update_neighbor_states(neighbor_state, 'hit')
     

@@ -7,7 +7,7 @@ def tuple_adapter(input):
 
 sqlite3.register_adapter(tuple, tuple_adapter)
 
-class Logger():
+class DB():
     def __init__(self):
         try:
             os.mkdir('db')
