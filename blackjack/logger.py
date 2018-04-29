@@ -1,25 +1,42 @@
 import os
-import matplotlib
-matplotlib.use('AGG')
-import pandas as pd
-import matplotlib.pyplot as plt
 import pickle
+import sqlite3
 
 class Logger():
     def __init__(self):
         try:
-            os.remove('logs/action_log.txt')
-            os.remove('logs/results_log.txt')
-        except FileNotFoundError:
+            os.mkdir('db')
+        except FileExistsError:
             pass
 
-        with open('logs/action_log.txt', 'w') as log:
-            log.write('Phase\tHouse\tPlayer\tAction\tStyle\n')
+        self.con = sqlite3.connect('db/blackjack.db')
+        try:
+            with self.con as con:
+                con.execute('''
+                    CREATE TABLE results (phase TEXT, player TEXT, house TEXT,
+                    result INTEGER);
+                ''')
+        except sqlite3.OperationalError:
+            con.execute('DELETE FROM results')
 
-        with open('logs/results_log.txt', 'w') as results:
-            results.write('Phase\tPlayer\tHouse\tReward\n')
+        try:
+            with self.con as con:
+                con.execute('''
+                    CREATE TABLE actions (phase TEXT, player TEXT, house TEXT,
+                    action TEXT);
+                ''')
+        except sqlite3.OperationalError:
+            con.execute('DELETE FROM actions')
 
-    def log_action(self, training, player_cards, house_cards, action, style):
+        try:
+            with self.con as con:
+                con.execute('''
+                  CREATE TABLE Q (state TEXT PRIMARY KEY, hit REAL, stand REAL)
+                ''')
+        except sqlite3.OperationalError:
+            con.execute('DELETE FROM Q')
+
+    def log_action(self, training, player_cards, house_cards, action, *args):
         hc = house_cards[0]
         pc = ' '.join(player_cards)
 
@@ -28,11 +45,9 @@ class Logger():
         else:
             phase = 'Testing'
 
-        action_record = '{:8}\t{:5}\t{:10}\t{:5}\t{:8}\n'.format(
-            phase, hc, pc, action, style)
-        
-        with open('logs/action_log.txt', 'a') as log:
-            log.write(action_record)
+        with self.con as con:
+            con.execute('INSERT INTO actions VALUES (?,?,?,?)',
+                        (phase, hc, pc, action))
 
     def log_Q(self, Q):
         with open('logs/q.pkl', 'b+w') as q_pkl:
@@ -57,18 +72,6 @@ class Logger():
         else:
             phase = 'Testing'
         
-        with open('logs/results_log.txt', 'a') as results:
-            results.write('{}\t{:20}\t{:20}\t{:4}\n'.format(phase, player, house, reward))
-
-    def report(self, rolling=1000, suffix=''):
-        if len(suffix):
-            suffix = '_' + suffix
-        
-        df = pd.read_table('logs/results_log.txt')
-
-        fig, ax = plt.subplots()
-        for phase in ['Training', 'Testing']:
-            data = df[df['Phase'] == phase]
-            ax.plot(data['Reward'].rolling(rolling).sum())
-
-        fig.savefig('logs/rolling_reward{}.png'.format(suffix))
+        with self.con as con:
+            con.execute('INSERT INTO results VALUES (?,?,?,?)',
+                        (phase, player, house, reward))

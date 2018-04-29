@@ -44,14 +44,3 @@ class Simulator:
         self.logger.log_Q(self.player.Q)
 
         return self
-    
-    def report(self, *args, **kwargs):
-        '''
-        Wrapper method for blackjack.logger.report(). All arguments are
-        passed unchanged.
-
-        Returns: self
-        '''
-        self.logger.report(*args, **kwargs)
-
-        return self

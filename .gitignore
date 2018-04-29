@@ -4,3 +4,4 @@ __pycache__
 .vscode
 logs
 run.py
+db
