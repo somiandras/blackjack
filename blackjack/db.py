@@ -152,8 +152,9 @@ class DB():
         with self.con as con:
             cursor = con.execute(query, args)
 
-            if cursor.fetchall() is not None:
-                return [action for s, action, v in cursor.fetchall()]
+            all_records = cursor.fetchall()
+            if all_records is not None:
+                return [action for s, action, v in all_records]
             else:
                 return None
 
