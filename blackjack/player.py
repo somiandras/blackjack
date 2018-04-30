@@ -100,12 +100,17 @@ class Player:
         else:
             potential_actions = self.db.argmax_Q(state, options)
         
+        if len(potential_actions) == 1:
+            decision = 'definite'
+        else:
+            decision = 'random'
+
         action = random.choice(potential_actions)
         
         if self.training:
             self.last_transition = (state, action)
 
-        self.db.log_action(self.training, state, action)
+        self.db.log_action(self.training, state, action, decision)
 
         return action
 

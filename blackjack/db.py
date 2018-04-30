@@ -14,7 +14,7 @@ class DB():
         except FileExistsError:
             pass
 
-        self.con = sqlite3.connect('db/blackjack.db')
+        self.con = sqlite3.connect('db/blackjack.db', timeout=10)
 
         try:
             with self.con as con:
@@ -27,7 +27,8 @@ class DB():
         try:
             with self.con as con:
                 con.execute('''
-                    CREATE TABLE actions (phase TEXT, state TEXT, action TEXT);
+                    CREATE TABLE actions (phase TEXT, state TEXT, action TEXT, 
+                    decision TEXT);
                 ''')
         except sqlite3.OperationalError:
             con.execute('DELETE FROM actions')
@@ -41,7 +42,7 @@ class DB():
         except sqlite3.OperationalError:
             con.execute('DELETE FROM Q')
 
-    def log_action(self, training, state, action):
+    def log_action(self, training, state, action, decision):
 
         if training:
             phase = 'Training'
@@ -49,8 +50,8 @@ class DB():
             phase = 'Testing'
 
         with self.con as con:
-            con.execute('INSERT INTO actions VALUES (?,?,?)',
-                        (phase, state, action))
+            con.execute('INSERT INTO actions VALUES (?,?,?,?)',
+                        (phase, state, action, decision))
 
     def max_Q(self, state, keys=None):
         if keys is None:
