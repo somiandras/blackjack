@@ -19,7 +19,8 @@ class DB():
         try:
             with self.con as con:
                 con.execute('''
-                    CREATE TABLE results (phase TEXT, state TEXT, result INTEGER);
+                    CREATE TABLE results (phase TEXT, state TEXT, result INTEGER,
+                    round_no INTEGER PRIMARY KEY);
                 ''')
         except sqlite3.OperationalError:
             con.execute('DELETE FROM results')
@@ -28,7 +29,7 @@ class DB():
             with self.con as con:
                 con.execute('''
                     CREATE TABLE actions (phase TEXT, state TEXT, action TEXT, 
-                    decision TEXT);
+                    decision TEXT, round_no TEXT);
                 ''')
         except sqlite3.OperationalError:
             con.execute('DELETE FROM actions')
@@ -42,7 +43,7 @@ class DB():
         except sqlite3.OperationalError:
             con.execute('DELETE FROM Q')
 
-    def log_action(self, training, state, action, decision):
+    def log_action(self, training, state, action, decision, round_no):
 
         if training:
             phase = 'Training'
@@ -50,8 +51,8 @@ class DB():
             phase = 'Testing'
 
         with self.con as con:
-            con.execute('INSERT INTO actions VALUES (?,?,?,?)',
-                        (phase, state, action, decision))
+            con.execute('INSERT INTO actions VALUES (?,?,?,?,?)',
+                        (phase, state, action, decision, round_no))
 
     def max_Q(self, state, keys=None):
         if keys is None:
@@ -169,7 +170,7 @@ class DB():
                     action = ?
             ''', (value, state, action))
     
-    def log_results(self, training, final_state, reward):
+    def log_results(self, training, final_state, reward, round_no):
 
         if training:
             phase = 'Training'
@@ -177,5 +178,5 @@ class DB():
             phase = 'Testing'
         
         with self.con as con:
-            con.execute('INSERT INTO results VALUES (?,?,?)',
-                        (phase, final_state, reward))
+            con.execute('INSERT INTO results VALUES (?,?,?,?)',
+                        (phase, final_state, reward, round_no))

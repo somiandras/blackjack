@@ -53,7 +53,7 @@ class Player:
     '''
     
     ACTIONS = ['hit', 'stand']
-    t = 0
+    t = 1
     last_transition = None
     training = True
 
@@ -110,7 +110,7 @@ class Player:
         if self.training:
             self.last_transition = (state, action)
 
-        self.db.log_action(self.training, state, action, decision)
+        self.db.log_action(self.training, state, action, decision, self.t)
 
         return action
 
@@ -131,7 +131,7 @@ class Player:
         if self.training:
             self.learn(reward)
 
-        self.db.log_results(self.training, final_state, reward)
+        self.db.log_results(self.training, final_state, reward, self.t)
 
         self.t += 1
 
