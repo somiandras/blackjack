@@ -46,21 +46,25 @@ class Dealer:
         '''
         return self.evaluate_cards(self.house_cards)
 
-    def evaluate_cards(self, hand):
+    @staticmethod
+    def evaluate_cards(hand):
         '''
         Calculates the value of a hand (list of cards) according to
         blackjack rules (2-T: face value, J-K: 10, A: either 1 or 11).
 
         Args:  
-        `hand`: list(str): list of card strings (first character: card
-        face, second character: suit, eg. 'As', '4c', 'Td')
+        `hand`: list(str): list of card strings (first character has to
+        be the card rank, eg. 'As', '4c', but 'A', '4' works too)
 
         Returns: (int): the current value of the hand.
         '''
         aces = [card for card in hand if card[0] == 'A']
         non_aces = [card for card in hand if card[0] != 'A']
 
-        value = 0
+        # All Aces count as 1
+        value = len(aces)
+
+        # Count non-aces
         for card in non_aces:
             try:
                 card_value = int(card[0])
@@ -69,11 +73,9 @@ class Dealer:
 
             value += card_value
         
-        for _ in aces:
-            if value <= 10:
-                value += 11
-            else:
-                value += 1
+        # Check if one of the Aces can be counted as 11
+        if len(aces) > 0 and value <= 11:
+                value += 10
 
         return value        
 
