@@ -28,35 +28,46 @@ class DB():
         except FileExistsError:
             pass
 
-        self.con = sqlite3.connect(
-            'db/blackjack.db', timeout=10, detect_types=sqlite3.PARSE_COLNAMES)
-
         try:
-            with self.con as con:
+            with self.connection as con:
                 con.execute('''
                     CREATE TABLE results (phase TEXT, state TEXT, result INTEGER,
                     round_no INTEGER PRIMARY KEY);
                 ''')
         except sqlite3.OperationalError:
-            con.execute('DELETE FROM results')
+            pass
 
         try:
-            with self.con as con:
+            with self.connection as con:
                 con.execute('''
                     CREATE TABLE actions (phase TEXT, state TEXT, action TEXT, 
                     decision TEXT, round_no TEXT);
                 ''')
         except sqlite3.OperationalError:
-            con.execute('DELETE FROM actions')
+            pass
 
         try:
-            with self.con as con:
+            with self.connection as con:
                 con.execute('''
                   CREATE TABLE Q (state TEXT, action TEXT, value INT,
                   PRIMARY KEY (state, action))
                 ''')
         except sqlite3.OperationalError:
-            con.execute('DELETE FROM Q')
+            pass
+
+    @property
+    def connection(self):
+        return sqlite3.connect(
+            'db/blackjack.db', timeout=10, detect_types=sqlite3.PARSE_COLNAMES)
+
+    def clear_tables(self):
+        with self.connection as con:
+            try:
+                con.execute('DELETE FROM results')
+                con.execute('DELETE FROM actions')
+                con.execute('DELETE FROM Q')
+            except sqlite3.OperationalError as e:
+                print(e)
 
     def log_action(self, training, state, action, decision, round_no):
 
@@ -65,7 +76,7 @@ class DB():
         else:
             phase = 'Testing'
 
-        with self.con as con:
+        with self.connection as con:
             con.execute('INSERT INTO actions VALUES (?,?,?,?,?)',
                         (phase, state, action, decision, round_no))
 
@@ -93,7 +104,7 @@ class DB():
             '''.format(seq)
             args = (state, *keys)
 
-        with self.con as con:            
+        with self.connection as con:            
             cursor = con.execute(query, args)
 
             _, max_Q = cursor.fetchone()
@@ -101,7 +112,7 @@ class DB():
         return max_Q
 
     def init_Q(self, state, actions):
-        with self.con as con:
+        with self.connection as con:
             cursor = con.execute('''
                 SELECT
                     state, action, value
@@ -114,7 +125,7 @@ class DB():
                     con.execute('INSERT INTO Q VALUES (?, ?, 0)', (state, action))
             
     def check_stateQ(self, state):
-        with self.con as con:
+        with self.connection as con:
             cursor = con.execute('''
                 SELECT state 
                 FROM Q 
@@ -125,7 +136,7 @@ class DB():
             return bool(cursor.fetchone())
     
     def get_Q_value(self, state, action):
-        with self.con as con:
+        with self.connection as con:
             cursor = con.execute('''
                 SELECT 
                     state, action, value 
@@ -166,7 +177,7 @@ class DB():
             '''.format(seq)
             args = (max_Q, state, *keys)
 
-        with self.con as con:
+        with self.connection as con:
             cursor = con.execute(query, args)
 
             all_records = cursor.fetchall()
@@ -176,7 +187,7 @@ class DB():
                 return None
 
     def set_Q(self, state, action, value):
-        with self.con as con:
+        with self.connection as con:
             con.execute('''
                 UPDATE Q 
                 SET value = ? 
@@ -186,7 +197,7 @@ class DB():
             ''', (value, state, action))
 
     def get_full_Q(self):
-        with self.con as con:
+        with self.connection as con:
             q = pd.read_sql(
                 'SELECT state as "state [state]", action, value FROM Q', con)
 
@@ -199,6 +210,6 @@ class DB():
         else:
             phase = 'Testing'
         
-        with self.con as con:
+        with self.connection as con:
             con.execute('INSERT INTO results VALUES (?,?,?,?)',
                         (phase, final_state, reward, round_no))
