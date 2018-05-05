@@ -3,6 +3,7 @@ import pickle
 import sqlite3
 import pandas as pd
 import re
+from datetime import datetime
 
 
 def tuple_adapter(input):
@@ -213,3 +214,18 @@ class DB():
         with self.connection as con:
             con.execute('INSERT INTO results VALUES (?,?,?,?)',
                         (phase, final_state, reward, round_no))
+
+    def export_test_results(self):
+        try:
+            os.mkdir('results')
+        except FileExistsError:
+            pass
+
+        with self.connection as con:
+            cursor = con.execute(
+                'SELECT * FROM results WHERE phase = "Testing"', con)
+        
+            ts = datetime.now().timestamp()
+            with open('results/test_results_{}.csv'.format(ts), 'w') as file:
+                for row in cursor:
+                    file.write(';'.join(row))

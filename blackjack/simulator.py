@@ -1,6 +1,6 @@
 from blackjack.dealer import Dealer
 from blackjack.player import Player
-
+from blackjack.db import DB
 
 class Simulator:
     '''
@@ -18,6 +18,7 @@ class Simulator:
         self.player = player
         self.test_games = test_games
         self.dealer = Dealer(self.player)
+        self.db = DB()
         
     def run(self):
         '''
@@ -35,12 +36,13 @@ class Simulator:
                 rounds), end="\r", flush=True)
 
         print()
-        
+
         for test in range(1, self.test_games + 1):
             self.dealer.run_game()
             print(' >> {} testing round done'.format(
                 test), end="\r", flush=True)
-
+        
+        self.db.export_test_results()
         print()
 
         return self
