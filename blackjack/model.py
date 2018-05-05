@@ -2,8 +2,12 @@ from collections import Counter
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score, f1_score
 import pandas as pd
+import pickle
 from blackjack.db import DB
+
 
 COLUMNS = ['2_pl',
            '3_pl',
@@ -37,14 +41,26 @@ class ModelException(Exception):
     pass
 
 
+default_model = Pipeline([
+    ('pca', PCA(n_components=10)),
+    ('clf', RandomForestClassifier(n_estimators=30,
+                                   min_samples_split=60,
+                                   min_samples_leaf=30,
+                                   max_depth=10))])
+
+
 class Model:
     '''
     Class for training and using a model based on learned Q values.
     '''
     trained = False
 
-    def __init__(self):
+    def __init__(self, model=None):
         self.db = DB()
+        if model:
+            self.model = model
+        else:
+            self.model = default_model
 
     def _load_data(self):
         '''
@@ -73,23 +89,52 @@ class Model:
         self.features = data.iloc[:, :-1].values
         self.labels = data['labels'].values
 
+    def test_model(self):
+        '''
+        Make simple assessment on the model before training it on the 
+        whole available Q data. Reports precision and f1-score after 
+        making simple train-test split, and saves the results in a log
+        file.
+        '''
+        features_train, features_test, labels_train, labels_test = \
+            train_test_split(self.features, self.labels, test_size=0.2)
+
+        self.model.fit(features_train, labels_train)
+        
+        train_predict = self.model.predict(features_train)
+        test_predict = self.model.predict(features_test)
+
+        scoring_data = zip(['train', 'test'],
+                           [labels_train, labels_test],
+                           [train_predict, test_predict])
+
+        with open('logs/model_scoring.txt', 'a') as logfile:
+            for dataset, y_true, y_pred in scoring_data:
+                precision = precision_score(y_true, y_pred)
+                f1 = f1_score(y_true, y_pred)
+
+                log = '{} set:\n\tprecision: {:.2f}\n\tf1-score:{:.2f}'.format(
+                    dataset, precision, f1)
+
+                logfile.write(log)
+
+    def save_model(self):
+        '''
+        Pickle the actual state of the model to model/model.pkl
+        '''
+        with open('model/model.pkl', 'bw') as model_file:
+            pickle.dump(self.model, model_file)
+
     def train(self):
         '''
         Trains predictive model with the loaded features and labels.
         Saves the fitted model in class property for later access.
         '''
         self._load_data()
-        pipeline = Pipeline([
-            ('pca', PCA(n_components=10)),
-            ('clf', RandomForestClassifier(n_estimators=30,
-                                           min_samples_split=60,
-                                           min_samples_leaf=30,
-                                           max_depth=10))])
-
-        pipeline.fit(self.features, self.labels)
-
-        self.model = pipeline
+        self.test_model()
+        self.model.fit(self.features, self.labels)
         self.trained = True
+        self.save_model()
 
     def _get_features_from_state(self, state):
         '''
