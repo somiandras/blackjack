@@ -1,7 +1,7 @@
 from itertools import combinations
 import random
 from blackjack.db import DB
-from blackjack.model import Model
+from blackjack.model import Model, ModelException
 
 class Player:
     '''
@@ -126,7 +126,7 @@ class Player:
             else:
                 try:
                     pred = self.model.predict_action(state)
-                except AssertionError:
+                except ModelException:
                     self.model.train()
                     pred = self.model.predict_action(state)
 

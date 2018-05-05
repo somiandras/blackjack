@@ -32,6 +32,11 @@ COLUMNS = ['2_pl',
            'Q_ho',
            'T_ho']
 
+
+class ModelException(Exception):
+    pass
+
+
 class Model:
     '''
     Class for training and using a model based on learned Q values.
@@ -125,7 +130,8 @@ class Model:
         -------
         Predicted label (0 - "stand", 1 - "hit")
         '''
-        assert self.trained, 'Train model before predicting action'
+        if not self.trained:
+            raise ModelException('Train model before predicting action')
 
         transformed = self._get_features_from_state(state)
         predicted = self.model.predict(transformed.values)
