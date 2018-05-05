@@ -71,6 +71,8 @@ class Player:
         self.db = DB()
         if self.training:
             self.db.clear_tables()
+        else:
+            self.db.clear_tables(tables=['results', 'actions'])
 
     def action(self, state, options):
         '''

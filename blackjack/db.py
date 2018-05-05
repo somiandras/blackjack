@@ -61,14 +61,13 @@ class DB():
         return sqlite3.connect(
             'db/blackjack.db', timeout=10, detect_types=sqlite3.PARSE_COLNAMES)
 
-    def clear_tables(self):
+    def clear_tables(self, tables=['results', 'actions', 'Q']):
         with self.connection as con:
-            try:
-                con.execute('DELETE FROM results')
-                con.execute('DELETE FROM actions')
-                con.execute('DELETE FROM Q')
-            except sqlite3.OperationalError as e:
-                print(e)
+            for table in tables:
+                try:
+                    con.execute('DELETE FROM {}'.format(table))
+                except sqlite3.OperationalError as e:
+                    print(e)
 
     def log_action(self, training, state, action, decision, round_no):
 
