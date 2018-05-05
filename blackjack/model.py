@@ -113,8 +113,8 @@ class Model:
                 precision = precision_score(y_true, y_pred)
                 f1 = f1_score(y_true, y_pred)
 
-                log = '{} set:\n\tprecision: {:.2f}\n\tf1-score:{:.2f}'.format(
-                    dataset, precision, f1)
+                log = '{} SET:\n\tprecision: {:.2f}\n\tf1-score:{:.2f}\n'.format(
+                    dataset.upper(), precision, f1)
 
                 logfile.write(log)
 
