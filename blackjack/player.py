@@ -39,7 +39,9 @@ class Player:
     be a sufficiently low float (default=0.01).  
     
     `training_rounds`: (int) when `constant_epsilon` is set to `True`
-    the training will end after this number of rounds (default=1000).
+    the training will end after this number of rounds. If set to 0, the
+    agent will immediately proceed to testing without clearing the tables
+    (default=1000).
     
     Properties
     ----------
@@ -55,7 +57,6 @@ class Player:
     ACTIONS = ['hit', 'stand']
     t = 1
     last_transition = None
-    training = True
 
     def __init__(self, alpha=0.5, gamma=0.9, epsilon=0.9, constant_epsilon=False,
                 tolerance=0.01, training_rounds=1000):
@@ -65,7 +66,11 @@ class Player:
         self.constant_epsilon = constant_epsilon
         self.tolerance = tolerance
         self.training_rounds = training_rounds
+        self.training = bool(self.training_rounds)
+
         self.db = DB()
+        if self.training:
+            self.db.clear_tables()
 
     def action(self, state, options):
         '''
