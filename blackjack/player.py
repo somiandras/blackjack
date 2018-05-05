@@ -123,7 +123,8 @@ class Player:
                     decision = 'Exploration'
                 else:
                     decision = 'Exploitation'
-            else:
+            
+            if not state_in_Q or decision == 'Exploration':
                 try:
                     pred = self.model.predict_action(state)
                 except ModelException:

@@ -1,3 +1,4 @@
+import os
 from collections import Counter
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
@@ -107,6 +108,10 @@ class Model:
         scoring_data = zip(['train', 'test'],
                            [labels_train, labels_test],
                            [train_predict, test_predict])
+        try:
+            os.remove('logs/model_scoring.txt')
+        except FileNotFoundError:
+            pass
 
         with open('logs/model_scoring.txt', 'a') as logfile:
             for dataset, y_true, y_pred in scoring_data:
