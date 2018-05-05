@@ -42,7 +42,7 @@ class DB():
             with self.connection as con:
                 con.execute('''
                     CREATE TABLE actions (phase TEXT, state TEXT, action TEXT, 
-                    decision TEXT, round_no TEXT);
+                    decision TEXT, round_no INTEGER);
                 ''')
         except sqlite3.OperationalError:
             pass
@@ -69,13 +69,7 @@ class DB():
                 except sqlite3.OperationalError as e:
                     print(e)
 
-    def log_action(self, training, state, action, decision, round_no):
-
-        if training:
-            phase = 'Training'
-        else:
-            phase = 'Testing'
-
+    def log_action(self, phase, state, action, decision, round_no):
         with self.connection as con:
             con.execute('INSERT INTO actions VALUES (?,?,?,?,?)',
                         (phase, state, action, decision, round_no))
@@ -222,9 +216,14 @@ class DB():
 
         with self.connection as con:
             cursor = con.execute(
-                'SELECT * FROM results WHERE phase = "Testing"', con)
+                'SELECT * FROM results WHERE phase = "Testing"')
         
             ts = datetime.now().timestamp()
             with open('results/test_results_{}.csv'.format(ts), 'w') as file:
+                headers = ['phase', 'state', 'result', 'round_no']
+                file.write(';'.join(headers))
+                file.write('\n')
+
                 for row in cursor:
-                    file.write(';'.join(row))
+                    file.write(';'.join([str(item) for item in row]))
+                    file.write('\n')

@@ -3,6 +3,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
+from blackjack.db import DB
 
 COLUMNS = ['2_pl',
            '3_pl',
@@ -35,10 +36,10 @@ class Model:
     '''
     Class for training and using a model based on learned Q values.
     '''
-    loaded = False
+    trained = False
 
-    def __init__(self, db):
-        self.db = db
+    def __init__(self):
+        self.db = DB()
 
     def _load_data(self):
         '''

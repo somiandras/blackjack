@@ -1,6 +1,7 @@
+from itertools import combinations
 import random
 from blackjack.db import DB
-from itertools import combinations
+from blackjack.model import Model
 
 class Player:
     '''
@@ -74,6 +75,8 @@ class Player:
         else:
             self.db.clear_tables(tables=['results', 'actions'])
 
+        self.model = Model()
+
     def action(self, state, options):
         '''
         Returns the chosen action from the given options for the provided
@@ -96,28 +99,50 @@ class Player:
         -------
         (str): the chosen action from the options list.
         '''
-
         if self.training:
-            self.db.init_Q(state, self.ACTIONS)
+            phase = 'Training'
 
-        state_in_Q = self.db.check_stateQ(state)
-        roll = random.random()
-        if roll < self.epsilon or not state_in_Q:
-            potential_actions = options
+            self.db.init_Q(state, self.ACTIONS)
+            roll = random.random() < self.epsilon
+            if roll:
+                potential_actions = options
+            else:
+                potential_actions = self.db.argmax_Q(state, options)
+ 
+            if len(potential_actions) > 1:
+                decision = 'Exploration'
+            else:
+                decision = 'Exploitation'
         else:
-            potential_actions = self.db.argmax_Q(state, options)
-        
-        if len(potential_actions) == 1:
-            decision = 'definite'
-        else:
-            decision = 'random'
+            phase = 'Testing'
+            state_in_Q = self.db.check_stateQ(state)
+
+            if state_in_Q:
+                potential_actions = self.db.argmax_Q(state, options)
+                if len(potential_actions) > 1:
+                    decision = 'Exploration'
+                else:
+                    decision = 'Exploitation'
+            else:
+                try:
+                    pred = self.model.predict_action(state)
+                except AssertionError:
+                    self.model.train()
+                    pred = self.model.predict_action(state)
+
+                if pred == 0:
+                    potential_actions = ['stand']
+                else:
+                    potential_actions = ['hit']
+
+                decision = 'Modelled'
 
         action = random.choice(potential_actions)
         
         if self.training:
             self.last_transition = (state, action)
 
-        self.db.log_action(self.training, state, action, decision, self.t)
+        self.db.log_action(phase, state, action, decision, self.t)
 
         return action
 
@@ -140,12 +165,12 @@ class Player:
 
         self.db.log_results(self.training, final_state, reward, self.t)
 
-        self.t += 1
-
         if (not self.constant_epsilon and self.epsilon < self.tolerance) or \
                 (self.constant_epsilon and self.t >= self.training_rounds):
             self.training = False
  
+        self.t += 1
+
     def learn(self, reward):
         '''
         Takes the reward and applies the Q-approximation iteration
@@ -158,9 +183,12 @@ class Player:
         Returns: None
         -------
         '''
-        state, action = self.last_transition
-        self._update_Q_value(state, action, reward, 0)
-        self._update_neighbor_states(state, 'hit')
+        if self.last_transition:
+            state, action = self.last_transition
+            self._update_Q_value(state, action, reward, 0)
+            self._update_neighbor_states(state, 'hit')
+        
+        self.last_transition = None
 
     def _update_Q_value(self, state, action, reward, next_Q):
         '''

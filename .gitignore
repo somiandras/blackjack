@@ -7,3 +7,4 @@ run.py
 db
 *ipynb*
 *.pkl
+*.csv

@@ -28,12 +28,12 @@ class Simulator:
 
         Returns: self
         '''
-        rounds = 0
+        rounds = 1
         while self.player.training:
-            rounds += 1
             self.dealer.run_game()
             print(' >> {} training round done'.format(
                 rounds), end="\r", flush=True)
+            rounds += 1
 
         print()
 
