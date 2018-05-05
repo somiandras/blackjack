@@ -1,11 +1,25 @@
 import os
 import pickle
 import sqlite3
+import pandas as pd
+import re
+
 
 def tuple_adapter(input):
     return str(input)
 
+
+def convert_state(state):
+    match = re.match(r'\(\((.*)\),\s(.{3})\)', state.decode('utf-8'))
+    player = match.group(1).replace('\'', '').replace(' ', '').split(',')
+    house = match.group(2).replace('\'', '')
+
+    return (tuple(player), house)
+
+
 sqlite3.register_adapter(tuple, tuple_adapter)
+sqlite3.register_converter('state', convert_state)
+
 
 class DB():
     def __init__(self):
@@ -14,7 +28,8 @@ class DB():
         except FileExistsError:
             pass
 
-        self.con = sqlite3.connect('db/blackjack.db', timeout=10)
+        self.con = sqlite3.connect(
+            'db/blackjack.db', timeout=10, detect_types=sqlite3.PARSE_COLNAMES)
 
         try:
             with self.con as con:
@@ -169,7 +184,14 @@ class DB():
                     state = ? AND
                     action = ?
             ''', (value, state, action))
-    
+
+    def get_full_Q(self):
+        with self.con as con:
+            q = pd.read_sql(
+                'SELECT state as "state [state]", action, value FROM Q', con)
+
+        return q
+
     def log_results(self, training, final_state, reward, round_no):
 
         if training:
