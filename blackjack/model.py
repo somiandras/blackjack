@@ -120,7 +120,7 @@ class Model:
 
                 log = '{} SET:\n\tprecision: {:.2f}\n\tf1-score:{:.2f}\n'.format(
                     dataset.upper(), precision, f1)
-
+                print('\n' + log + '\n')
                 logfile.write(log)
 
     def save_model(self):

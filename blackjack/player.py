@@ -110,9 +110,9 @@ class Player:
                 potential_actions = self.db.argmax_Q(state, options)
  
             if len(potential_actions) > 1:
-                decision = 'Exploration'
+                decision = 'Exploring'
             else:
-                decision = 'Exploitation'
+                decision = 'Learned'
         else:
             phase = 'Testing'
             state_in_Q = self.db.check_stateQ(state)
@@ -120,22 +120,12 @@ class Player:
             if state_in_Q:
                 potential_actions = self.db.argmax_Q(state, options)
                 if len(potential_actions) > 1:
-                    decision = 'Exploration'
+                    decision = 'Exploring'
                 else:
-                    decision = 'Exploitation'
+                    decision = 'Learned'
             
-            if not state_in_Q or decision == 'Exploration':
-                try:
-                    pred = self.model.predict_action(state)
-                except ModelException:
-                    self.model.train()
-                    pred = self.model.predict_action(state)
-
-                if pred == 0:
-                    potential_actions = ['stand']
-                else:
-                    potential_actions = ['hit']
-
+            if not state_in_Q or decision == 'Exploring':
+                potential_actions = [self._get_modelled_action(state)] 
                 decision = 'Modelled'
 
         action = random.choice(potential_actions)
@@ -144,6 +134,19 @@ class Player:
             self.last_transition = (state, action)
 
         self.db.log_action(phase, state, action, decision, self.t)
+
+        return action
+
+    def _get_modelled_action(self, state):
+        if not self.model.trained:
+            self.model.train()
+        
+        pred = self.model.predict_action(state)
+
+        if pred == 0:
+            action = 'stand'
+        else:
+            action = 'hit'
 
         return action
 
